@@ -1,7 +1,7 @@
 import tkinter as Tk
 from tkinter import *
 
-class App(Object):
+class App(object):
     def __init__(self):
         self.root = Tk()
         self.root.title('POE Helper Tool')
