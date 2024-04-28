@@ -80,7 +80,9 @@ class MainGUI(tk.Tk):
         if button == mouse.Button.middle and pressed:
             pyautogui.hotkey('ctrl', 'alt', 'c')
             clipboard_content = pyperclip.paste()
-            self.print_to_logger(clipboard_content)
+            item_name, modifiers = self.parse_item_data(clipboard_content)
+            if item_name and modifiers:
+                self.print_to_logger(item_name, modifiers)
 
     def toggle_data_fetch(self):
         if self.data_fetch_btn['bg'] == '#FFD700':  # Yellow means inactive
@@ -97,9 +99,29 @@ class MainGUI(tk.Tk):
     def stop_listening(self):
         self.listener.stop()
 
-    def print_to_logger(self, text):
+    def print_to_logger(self, item_name, modifiers):
         # Clear existing content
         for widget in self.logger_panel.winfo_children():
             widget.destroy()
-        log_label = tk.Label(self.logger_panel, text=text, bg='#333333', fg='white')
-        log_label.pack()
+        
+        # Item name in bold and yellow
+        item_label = tk.Label(self.logger_panel, text=item_name, bg='#333333', fg='#FFD700', font=('Helvetica', '12', 'bold'))
+        item_label.pack()
+
+        # Modifiers
+        for mod in modifiers:
+            mod_label = tk.Label(self.logger_panel, text=mod, bg='#333333', fg='white')
+            mod_label.pack()
+
+    def parse_item_data(self, clipboard_content):
+        sections = clipboard_content.split('--------')
+        if len(sections) < 5:
+            return None, None  # Not enough data
+
+        # Extracting item name (last line of the first block)
+        item_name = sections[0].strip().split('\n')[-1]
+
+        # Extracting modifiers (everything in the fifth section)
+        modifiers = sections[4].strip().split('\n')
+
+        return item_name, modifiers
