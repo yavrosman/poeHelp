@@ -1,16 +1,10 @@
-import PySimpleGUI as sg
+import threading
+import Ui
 
 def main():
-    layout = [[
-        sg.Text('Hello World!'),
-        sg.Button('OK')
-    ]]
-    window = sg.Window('POE Helper Tool', layout)
-    while True:
-        if sg.window_read(window)[0] == 'EXIT':
-            break
-        else:
-            window.close()
+    thread = threading.Thread(target=Ui.create_gui)
+    thread.start()
+    thread.join()
 
 if __name__ == '__main__':
     main()
