@@ -5,7 +5,7 @@ import pyautogui
 import pyperclip
 import time
 import json
-from PyQt5.QtWidgets import QApplication, QPushButton, QLineEdit, QTableWidget, QTableWidgetItem, QHeaderView, QTextEdit
+from PyQt5.QtWidgets import QApplication,QListWidgetItem, QPushButton, QLineEdit, QTableWidget, QTableWidgetItem, QHeaderView, QTextEdit
 import re
 from PyQt5.QtGui import QColor  # Add this line
 
@@ -65,21 +65,38 @@ class ModsWindow(QMainWindow):
 
     def on_click(self, x, y, button, pressed):
         if button == mouse.Button.middle and pressed:
+            self.selected_mods_list.clear()
             pyautogui.hotkey('ctrl', 'alt', 'c')
             item_data = pyperclip.paste()
             cleaned_modifiers = self.extract_modifiers(item_data)
             if cleaned_modifiers:
                 for mod in cleaned_modifiers.split('\n'):
-                    self.selected_mods_list.addItem(mod)
+                    item = QListWidgetItem(mod)
+                    if mod in self.mods:
+                        item.setBackground(QColor('green'))
+                    self.selected_mods_list.addItem(item)
                 print(f"Item Count: {self.selected_mods_list.count()}")  # Debug print statement
 
     def on_item_clicked(self, item):
-        item.setBackground(QColor('green'))
-        new_mod = item.text()
-        self.mods.append(new_mod)
+        mod = item.text()
+        if mod in self.mods:
+            # Remove the mod from self.mods and self.mods_list
+            self.mods.remove(mod)
+            for i in range(self.mods_list.count()):
+                if self.mods_list.item(i).text() == mod:
+                    self.mods_list.takeItem(i)
+                    break
 
-        # Add the new mod to self.mods_list
-        self.mods_list.addItem(new_mod)
+            # Remove the green background from the corresponding item in self.selected_mods_list
+            for i in range(self.selected_mods_list.count()):
+                if self.selected_mods_list.item(i).text() == mod:
+                    self.selected_mods_list.item(i).setBackground(QColor('white'))
+                    break
+        else:
+            # Add the mod to self.mods and self.mods_list
+            item.setBackground(QColor('green'))
+            self.mods.append(mod)
+            self.mods_list.addItem(mod)
 
         # Save the profile data back to the JSON file
         with open("map_craft_profiles.json", "r") as file:
@@ -90,6 +107,11 @@ class ModsWindow(QMainWindow):
                 break
         with open("map_craft_profiles.json", "w") as file:
             json.dump(profiles, file)
+
+    def closeEvent(self, event):
+        # Stop the listener when the window is closed
+        self.listener.stop()
+        event.accept()
 
     @staticmethod
     def extract_modifiers(item_data):
