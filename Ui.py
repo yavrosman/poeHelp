@@ -1,6 +1,10 @@
 
 import tkinter as tk
 from tkinter import ttk
+from pynput.mouse import Listener as MouseListener
+from pynput import mouse
+import pyautogui
+import pyperclip
 
 class MainGUI(tk.Tk):
     def __init__(self):
@@ -34,13 +38,13 @@ class MainGUI(tk.Tk):
         self.close_btn.pack(pady=10, padx=20, fill='x')
 
         # Main App Screen with border
-        self.app_screen = tk.Frame(self, width=500, height=600, bg='#333333', bd=2, relief='solid')
+        self.app_screen = tk.Frame(self, width=400, height=600, bg='#333333', bd=2, relief='solid')
         self.app_screen.pack(side='left', fill='y')
         self.app_screen.pack_propagate(False)  # Prevent resizing
 
 
         # Logger Panel with border
-        self.logger_panel = tk.Frame(self, width=300, height=600, bg='#333333', bd=2, relief='solid')
+        self.logger_panel = tk.Frame(self, width=400, height=600, bg='#333333', bd=2, relief='solid')
         self.logger_panel.pack(side='left', fill='y')
         self.logger_panel.pack_propagate(False)  # Prevent resizing
 
@@ -66,5 +70,36 @@ class MainGUI(tk.Tk):
     def show_map_craft(self):
         for widget in self.app_screen.winfo_children():
             widget.destroy()
+        self.data_fetch_btn = tk.Button(self.app_screen, text="Enable Data Fetching", bg='#FFD700', fg='black',
+                                        command=self.toggle_data_fetch)
+        self.data_fetch_btn.pack(pady=10, fill='x')
         map_label = tk.Label(self.app_screen, text="Map Craft Screen", bg='#333333', fg='white')
         map_label.pack(expand=True)
+
+    def on_click(self, x, y, button, pressed):
+        if button == mouse.Button.middle and pressed:
+            pyautogui.hotkey('ctrl', 'alt', 'c')
+            clipboard_content = pyperclip.paste()
+            self.print_to_logger(clipboard_content)
+
+    def toggle_data_fetch(self):
+        if self.data_fetch_btn['bg'] == '#FFD700':  # Yellow means inactive
+            self.data_fetch_btn['bg'] = '#00FF00'  # Green means active
+            self.start_listening()
+        else:
+            self.data_fetch_btn['bg'] = '#FFD700'
+            self.stop_listening()
+    
+    def start_listening(self):
+        self.listener = MouseListener(on_click=self.on_click)
+        self.listener.start()
+
+    def stop_listening(self):
+        self.listener.stop()
+
+    def print_to_logger(self, text):
+        # Clear existing content
+        for widget in self.logger_panel.winfo_children():
+            widget.destroy()
+        log_label = tk.Label(self.logger_panel, text=text, bg='#333333', fg='white')
+        log_label.pack()
