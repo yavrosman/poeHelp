@@ -5,6 +5,7 @@ from pynput.mouse import Listener as MouseListener
 from pynput import mouse
 import pyautogui
 import pyperclip
+import json
 
 class MainGUI(tk.Tk):
     def __init__(self):
@@ -70,11 +71,56 @@ class MainGUI(tk.Tk):
     def show_map_craft(self):
         for widget in self.app_screen.winfo_children():
             widget.destroy()
-        self.data_fetch_btn = tk.Button(self.app_screen, text="Enable Data Fetching", bg='#FFD700', fg='black',
-                                        command=self.toggle_data_fetch)
-        self.data_fetch_btn.pack(pady=10, fill='x')
-        map_label = tk.Label(self.app_screen, text="Map Craft Screen", bg='#333333', fg='white')
-        map_label.pack(expand=True)
+        
+        # Entry for profile name
+        self.profile_entry = tk.Entry(self.app_screen, fg='black', bg='white', width=20)
+        self.profile_entry.insert(0, 'Profile name')  # Placeholder text
+        self.profile_entry.pack(pady=10, side='left', padx=(10, 0))
+
+        # Button to add profile
+        self.add_profile_btn = tk.Button(self.app_screen, text='+', bg='#00FF00', fg='black', command=self.create_profile)
+        self.add_profile_btn.pack(pady=10, side='left')
+
+        # Display existing profiles
+        self.display_profiles()
+
+    def create_profile(self):
+        profile_name = self.profile_entry.get()
+        if profile_name and profile_name != 'Profile name':
+            # Load existing profiles
+            try:
+                with open('map_craft_profiles.json', 'r') as file:
+                    profiles = json.load(file)
+            except FileNotFoundError:
+                profiles = []
+
+            # Add new profile
+            profiles.append({'name': profile_name, 'mods': []})
+
+            # Save to JSON
+            with open('map_craft_profiles.json', 'w') as file:
+                json.dump(profiles, file, indent=4)
+            
+            # Update UI
+            self.display_profiles()
+
+    def display_profiles(self):
+        # Assuming there is a frame for displaying profiles
+        if hasattr(self, 'profiles_frame'):
+            self.profiles_frame.destroy()
+        
+        self.profiles_frame = tk.Frame(self.app_screen, bg='#333333')
+        self.profiles_frame.pack(fill='both', expand=True)
+        
+        try:
+            with open('map_craft_profiles.json', 'r') as file:
+                profiles = json.load(file)
+        except FileNotFoundError:
+            profiles = []
+
+        for profile in profiles:
+            label = tk.Label(self.profiles_frame, text=profile['name'], bg='white', fg='black')
+            label.pack(pady=2, padx=10, fill='x')
 
     def on_click(self, x, y, button, pressed):
         if button == mouse.Button.middle and pressed:
@@ -121,7 +167,8 @@ class MainGUI(tk.Tk):
         # Extracting item name (last line of the first block)
         item_name = sections[0].strip().split('\n')[-1]
 
-        # Extracting modifiers (everything in the fifth section)
-        modifiers = sections[4].strip().split('\n')
+        # Extracting modifiers (everything in the fifth section), excluding lines between "{}"
+        modifiers = [line.strip() for line in sections[4].strip().split('\n') if not (line.startswith('{') and line.endswith('}'))]
 
         return item_name, modifiers
+
