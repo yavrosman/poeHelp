@@ -15,26 +15,35 @@ class MainGUI(tk.Tk):
         self.bind('<Button-1>', self.click_win)
         self.bind('<B1-Motion>', self.drag_win)
 
-        self.menu_frame = tk.Frame(self, width=200, height=600, bg='#333333')
+        # Menu Frame with border
+        self.menu_frame = tk.Frame(self, width=200, height=600, bg='#333333', bd=2, relief='solid')
         self.menu_frame.pack(side='left', fill='y')
+        self.menu_frame.pack_propagate(False)  # Prevent resizing
 
+        # Buttons are centered by using padx and pady for uniform spacing around
         self.home_btn = tk.Button(self.menu_frame, text='Home', bg='#FFD700', fg='black',
                                   command=self.show_home)
-        self.home_btn.pack(pady=(20, 10), fill='x')
+        self.home_btn.pack(pady=(60, 10), padx=20, fill='x')
 
         self.map_craft_btn = tk.Button(self.menu_frame, text='Map Craft', bg='#FFD700', fg='black',
                                        command=self.show_map_craft)
-        self.map_craft_btn.pack(pady=10, fill='x')
+        self.map_craft_btn.pack(pady=10, padx=20, fill='x')
 
         self.close_btn = tk.Button(self.menu_frame, text='Close', bg='#FF0000', fg='black',
                                    command=self.close_app)
-        self.close_btn.pack(pady=10, fill='x')
+        self.close_btn.pack(pady=10, padx=20, fill='x')
 
-        self.app_screen = tk.Frame(self, width=400, height=600, bg='#333333')
+        # Main App Screen with border
+        self.app_screen = tk.Frame(self, width=500, height=600, bg='#333333', bd=2, relief='solid')
         self.app_screen.pack(side='left', fill='y')
+        self.app_screen.pack_propagate(False)  # Prevent resizing
 
-        self.logger_panel = tk.Frame(self, width=300, height=600, bg='#333333')
+
+        # Logger Panel with border
+        self.logger_panel = tk.Frame(self, width=300, height=600, bg='#333333', bd=2, relief='solid')
         self.logger_panel.pack(side='left', fill='y')
+        self.logger_panel.pack_propagate(False)  # Prevent resizing
+
 
     def click_win(self, event):
         self.offset_x = event.x
